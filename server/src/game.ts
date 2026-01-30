@@ -463,26 +463,37 @@ export function getAIAction(game: GameState, player: Player): { action: PlayerAc
 // Convert game state to client-safe version (hide other players' cards)
 export function toClientGameState(game: GameState, viewerId?: string): ClientGameState {
   const isShowdown = game.phase === 'showdown';
+  const winnerIds = game.winners?.map(w => w.playerId) || [];
+  // Check if winner won by everyone else folding (no need to show cards)
+  const wonByFold = game.winners?.length === 1 && game.winners[0].handName === 'Last player standing';
 
-  const clientPlayers: ClientPlayer[] = game.players.map(player => ({
-    id: player.id,
-    name: player.name,
-    chips: player.chips,
-    cards: player.cards.map(card => {
-      // Show cards if: it's showdown, or it's the viewer's own cards
-      if (isShowdown || player.id === viewerId) {
-        return card;
-      }
-      // Hide cards
-      return player.cards.length > 0 ? null : null;
-    }),
-    bet: player.bet,
-    status: player.status,
-    isAI: player.isAI,
-    isSpectator: player.isSpectator,
-    seatIndex: player.seatIndex,
-    isDisconnected: player.disconnectedAt !== undefined
-  }));
+  const clientPlayers: ClientPlayer[] = game.players.map(player => {
+    // Determine if this player's cards should be visible
+    const isViewer = player.id === viewerId;
+    const playerChoseToShow = player.showCards === true;
+    const isWinnerAtShowdown = isShowdown && !wonByFold && winnerIds.includes(player.id);
+    const shouldShowCards = isViewer || playerChoseToShow || isWinnerAtShowdown;
+
+    return {
+      id: player.id,
+      name: player.name,
+      chips: player.chips,
+      cards: player.cards.map(card => {
+        if (shouldShowCards) {
+          return card;
+        }
+        // Hide cards - return null if player has cards
+        return player.cards.length > 0 ? null : null;
+      }),
+      bet: player.bet,
+      status: player.status,
+      isAI: player.isAI,
+      isSpectator: player.isSpectator,
+      seatIndex: player.seatIndex,
+      isDisconnected: player.disconnectedAt !== undefined,
+      showCards: player.showCards
+    };
+  });
 
   return {
     id: game.id,

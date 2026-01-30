@@ -15,6 +15,8 @@ interface UseSocketReturn {
   playerAction: (action: PlayerAction, amount?: number) => void;
   addAI: () => void;
   sendChat: (message: string) => void;
+  revealCards: () => void;
+  nextHand: () => void;
   chatMessages: ChatMessage[];
   lastSound: SoundEffect | null;
 }
@@ -110,6 +112,14 @@ export function useSocket(): UseSocketReturn {
     socketRef.current?.emit('sendChat', message);
   }, []);
 
+  const revealCards = useCallback(() => {
+    socketRef.current?.emit('revealCards');
+  }, []);
+
+  const nextHand = useCallback(() => {
+    socketRef.current?.emit('nextHand');
+  }, []);
+
   return {
     connected,
     gameState,
@@ -121,6 +131,8 @@ export function useSocket(): UseSocketReturn {
     playerAction,
     addAI,
     sendChat,
+    revealCards,
+    nextHand,
     chatMessages,
     lastSound
   };

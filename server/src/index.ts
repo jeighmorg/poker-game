@@ -237,15 +237,7 @@ io.on('connection', (socket) => {
     // Check for game end
     if (room.game.phase === 'showdown') {
       emitSound(currentRoomId, 'chip-win');
-      // Auto-start next hand after delay
-      setTimeout(() => {
-        if (canStartGame(room.game)) {
-          startNewHand(room.game);
-          broadcastGameState(room);
-          emitSound(currentRoomId!, 'card-deal');
-          scheduleAITurn(room);
-        }
-      }, 5000);
+      // Don't auto-start - wait for players to reveal cards or click next hand
     } else {
       // Notify current player it's their turn
       notifyCurrentPlayer(room);
@@ -289,6 +281,45 @@ io.on('connection', (socket) => {
       playerName: player.name,
       text: message
     });
+  });
+
+  socket.on('revealCards', () => {
+    if (!currentRoomId || !currentPlayerId) return;
+    const room = rooms.get(currentRoomId);
+    if (!room) return;
+
+    // Only allow revealing during showdown
+    if (room.game.phase !== 'showdown') {
+      socket.emit('error', 'Can only reveal cards at showdown');
+      return;
+    }
+
+    const player = room.game.players.find(p => p.id === currentPlayerId);
+    if (!player) return;
+
+    player.showCards = true;
+    broadcastGameState(room);
+  });
+
+  socket.on('nextHand', () => {
+    if (!currentRoomId) return;
+    const room = rooms.get(currentRoomId);
+    if (!room) return;
+
+    // Only allow starting next hand from showdown
+    if (room.game.phase !== 'showdown') {
+      socket.emit('error', 'Can only start next hand after showdown');
+      return;
+    }
+
+    if (canStartGame(room.game)) {
+      startNewHand(room.game);
+      broadcastGameState(room);
+      emitSound(currentRoomId, 'card-deal');
+      scheduleAITurn(room);
+    } else {
+      socket.emit('error', 'Not enough players to continue');
+    }
   });
 
   socket.on('disconnect', () => {

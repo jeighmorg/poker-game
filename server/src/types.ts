@@ -22,6 +22,7 @@ export interface Player {
   seatIndex: number;
   disconnectedAt?: number;
   socketId?: string;
+  showCards?: boolean; // Player chose to reveal cards at showdown
 }
 
 // Game types
@@ -116,6 +117,8 @@ export interface ClientToServerEvents {
   takeSeat: (seatIndex: number) => void;
   standUp: () => void;
   addAI: () => void;
+  revealCards: () => void;
+  nextHand: () => void;
 }
 
 // Client game state (with hidden information filtered)
@@ -148,6 +151,7 @@ export interface ClientPlayer {
   isSpectator: boolean;
   seatIndex: number;
   isDisconnected: boolean;
+  showCards?: boolean; // Player chose to reveal cards
 }
 
 export type SoundEffect = 'card-deal' | 'chip-bet' | 'chip-win' | 'fold' | 'check' | 'all-in' | 'your-turn';

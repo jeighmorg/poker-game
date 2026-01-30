@@ -6,9 +6,11 @@ interface ActionBarProps {
   onAction: (action: PlayerAction, amount?: number) => void;
   onStartGame: () => void;
   onAddAI: () => void;
+  onRevealCards: () => void;
+  onNextHand: () => void;
 }
 
-export function ActionBar({ gameState, onAction, onStartGame, onAddAI }: ActionBarProps) {
+export function ActionBar({ gameState, onAction, onStartGame, onAddAI, onRevealCards, onNextHand }: ActionBarProps) {
   const [raiseAmount, setRaiseAmount] = useState<number>(0);
 
   const { phase, players, currentPlayerIndex, currentBet, minRaise, bigBlind, myPlayerId } = gameState;
@@ -67,10 +69,31 @@ export function ActionBar({ gameState, onAction, onStartGame, onAddAI }: ActionB
   }
 
   if (phase === 'showdown') {
+    const hasRevealedCards = myPlayer?.showCards === true;
+    const didFold = myPlayer?.status === 'folded';
+
     return (
       <div className="bg-gray-800 p-4 rounded-xl text-center text-white">
-        <div className="text-xl font-bold mb-2">Showdown!</div>
-        <div className="text-gray-400">Next hand starting soon...</div>
+        <div className="text-xl font-bold mb-4">Showdown!</div>
+        <div className="flex gap-4 justify-center flex-wrap">
+          {myPlayer && !didFold && !hasRevealedCards && (
+            <button
+              onClick={onRevealCards}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold"
+            >
+              Show Cards
+            </button>
+          )}
+          {myPlayer && hasRevealedCards && (
+            <span className="px-6 py-3 text-green-400 font-bold">Cards Revealed</span>
+          )}
+          <button
+            onClick={onNextHand}
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold"
+          >
+            Next Hand
+          </button>
+        </div>
       </div>
     );
   }

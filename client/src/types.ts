@@ -23,6 +23,7 @@ export interface ClientPlayer {
   isSpectator: boolean;
   seatIndex: number;
   isDisconnected: boolean;
+  showCards?: boolean;
 }
 
 export interface SidePot {

@@ -16,6 +16,8 @@ function App() {
     startGame,
     playerAction,
     addAI,
+    revealCards,
+    nextHand,
     lastSound
   } = useSocket();
 
@@ -117,6 +119,8 @@ function App() {
             onAction={playerAction}
             onStartGame={startGame}
             onAddAI={addAI}
+            onRevealCards={revealCards}
+            onNextHand={nextHand}
           />
         </div>
       </main>
