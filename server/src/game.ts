@@ -90,7 +90,7 @@ export function getPlayersInHand(game: GameState): Player[] {
 
 export function canStartGame(game: GameState): boolean {
   const playersReady = game.players.filter(p => !p.isSpectator && p.chips > 0);
-  return playersReady.length >= 2 && game.phase === 'waiting';
+  return playersReady.length >= 2 && (game.phase === 'waiting' || game.phase === 'showdown');
 }
 
 export function startNewHand(game: GameState): void {
