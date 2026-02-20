@@ -23,6 +23,7 @@ export interface Player {
   disconnectedAt?: number;
   socketId?: string;
   showCards?: boolean; // Player chose to reveal cards at showdown
+  hasActed?: boolean; // Has acted in the current betting round
 }
 
 // Game types

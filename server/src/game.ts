@@ -108,6 +108,7 @@ export function startNewHand(game: GameState): void {
   for (const player of game.players) {
     player.cards = [];
     player.bet = 0;
+    player.hasActed = false;
     if (!player.isSpectator && player.chips > 0) {
       player.status = 'active';
     } else if (player.chips <= 0) {
@@ -281,6 +282,7 @@ export function processAction(
   }
 
   game.lastAction = { playerId, action, amount };
+  player.hasActed = true;
 
   // Move to next player or next phase
   advanceGame(game);
@@ -317,17 +319,19 @@ function advanceGame(game: GameState): void {
 }
 
 function hasEveryoneActed(game: GameState): boolean {
-  // Simple check: if we've gone around and everyone has matched or is all-in
   const playersInHand = getPlayersInHand(game);
   return playersInHand.every(p =>
-    p.bet === game.currentBet || p.status === 'all-in' || p.status === 'folded'
+    p.status === 'all-in' ||
+    p.status === 'folded' ||
+    (p.hasActed && p.bet === game.currentBet)
   );
 }
 
 function moveToNextPhase(game: GameState): void {
-  // Reset bets for new round
+  // Reset bets and action flags for new round
   for (const player of game.players) {
     player.bet = 0;
+    player.hasActed = false;
   }
   game.currentBet = 0;
   game.minRaise = game.bigBlind;
